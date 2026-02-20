@@ -42,13 +42,15 @@
     }
     button:hover    { opacity: 0.88; }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
-    #loginBtn    { background: #3f51b5; color: #fff; }
-    #snapBtn     { background: #1a237e; color: #fff; }
-    #retakeBtn   { background: #ef6c00; color: #fff; display: none; }
-    #clockInBtn  { background: #43a047; color: #fff; }
-    #clockOutBtn { background: #e53935; color: #fff; }
-    #logoutBtn   { background: #757575; color: #fff; font-weight: 400; }
-    #statusMsg   { margin-top: 6px; font-size: 0.88rem; color: #555; min-height: 20px; line-height: 1.4; }
+    #loginBtn      { background: #3f51b5; color: #fff; }
+    #snapBtn       { background: #1a237e; color: #fff; }
+    #retakeBtn     { background: #ef6c00; color: #fff; display: none; }
+    #clockInBtn    { background: #43a047; color: #fff; }
+    #clockOutBtn   { background: #e53935; color: #fff; }
+    #weekOffBtn    { background: #7b1fa2; color: #fff; }
+    #leaveBtn      { background: #f57c00; color: #fff; }
+    #logoutBtn     { background: #757575; color: #fff; font-weight: 400; }
+    #statusMsg     { margin-top: 6px; font-size: 0.88rem; color: #555; min-height: 20px; line-height: 1.4; }
     #infoBox {
       background: #e8f5e9; border-radius: 8px; padding: 8px 10px;
       font-size: 0.8rem; color: #2e7d32; margin-bottom: 10px; display: none;
@@ -56,6 +58,10 @@
     #errorBox {
       background: #ffebee; border-radius: 8px; padding: 8px 10px;
       font-size: 0.8rem; color: #c62828; margin-bottom: 10px; display: none;
+    }
+    .divider {
+      border: none; border-top: 1px solid #eee;
+      margin: 4px 0 10px 0;
     }
   </style>
 </head>
@@ -78,19 +84,29 @@
     <h3 id="welcome"></h3>
     <div id="infoBox"></div>
     <div id="errorBox"></div>
+
     <video id="video" autoplay playsinline muted></video>
     <img   id="photoPreview" alt="Captured Photo">
-    <button id="snapBtn"     onclick="snapPhoto()">📸 Photo Lo</button>
-    <button id="retakeBtn"   onclick="retakePhoto()">🔄 Dobara Lo</button>
+
+    <button id="snapBtn"   onclick="snapPhoto()">📸 Take Photo</button>
+    <button id="retakeBtn" onclick="retakePhoto()">🔄 Retake Photo</button>
+
     <button id="clockInBtn"  onclick="clockIn()">✅ Clock In</button>
     <button id="clockOutBtn" onclick="clockOut()">🔴 Clock Out</button>
-    <button id="logoutBtn"   onclick="logout()">Logout</button>
+
+    <hr class="divider">
+
+    <button id="weekOffBtn" onclick="markWeekOff()">📅 Week Off</button>
+    <button id="leaveBtn"   onclick="markLeave()">🏖️ Mark Leave</button>
+
+    <hr class="divider">
+
+    <button id="logoutBtn" onclick="logout()">Logout</button>
     <div id="statusMsg"></div>
   </div>
 
 </div>
 <script>
-  // ★ Google Apps Script URL
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxz44L38utZ0rsvkunrGGirVrgKXDfrIKR7__A2M79obycmZ5szE1U3OiBuExDEs3Yk/exec";
 
   let currentUser  = "";
@@ -103,19 +119,19 @@
   function showInfo(msg)  { const b = document.getElementById("infoBox");  b.textContent = msg; b.style.display = msg ? "block" : "none"; }
   function showError(msg) { const b = document.getElementById("errorBox"); b.textContent = msg; b.style.display = msg ? "block" : "none"; }
   function setBtns(flag) {
-    ["loginBtn","clockInBtn","clockOutBtn","snapBtn"].forEach(id => {
+    ["loginBtn","clockInBtn","clockOutBtn","snapBtn","weekOffBtn","leaveBtn"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = flag;
     });
   }
 
-  // ── API Call (fetch instead of google.script.run) ──
+  // ── API Call ─────────────────────────────────
   function callScript(action, data, callback) {
-    const params = Object.assign({ action: action }, data);
+    const params = Object.assign({ action }, data);
     fetch(SCRIPT_URL, {
       method: "POST",
       body: JSON.stringify(params),
-      headers: { "Content-Type": "text/plain" } // text/plain avoids CORS preflight
+      headers: { "Content-Type": "text/plain" }
     })
     .then(r => r.json())
     .then(callback)
@@ -129,7 +145,7 @@
   function login() {
     const loginId  = document.getElementById("loginId").value.trim();
     const password = document.getElementById("password").value.trim();
-    if (!loginId || !password) { setStatus("⚠️ Login ID aur Password daalo."); return; }
+    if (!loginId || !password) { setStatus("⚠️ Please enter Login ID and Password."); return; }
 
     setStatus("Logging in…");
     setBtns(true);
@@ -152,7 +168,7 @@
 
   // ── Camera ───────────────────────────────────
   function startCamera() {
-    showError(""); showInfo("Camera shuru ho raha hai…");
+    showError(""); showInfo("Starting camera…");
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
     .then(function(stream) {
       cameraStream = stream;
@@ -161,11 +177,11 @@
       video.style.display = "block";
       video.onloadedmetadata = function() {
         video.play();
-        showInfo("✅ Camera ready — 📸 Photo Lo dabao.");
+        showInfo("✅ Camera ready — click Take Photo.");
       };
     })
     .catch(function(err) {
-      showError("❌ Camera error: " + err.message + " — Browser address bar mein camera allow karo.");
+      showError("❌ Camera error: " + err.message + " — Please allow camera in browser.");
       showInfo("");
     });
   }
@@ -177,18 +193,18 @@
   // ── Snap / Retake ────────────────────────────
   function snapPhoto() {
     const video = document.getElementById("video");
-    if (!video.videoWidth) { setStatus("⚠️ Camera ready nahi, thoda wait karo."); return; }
+    if (!video.videoWidth) { setStatus("⚠️ Camera not ready, please wait."); return; }
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
     photoBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-    document.getElementById("photoPreview").src          = photoBase64;
+    document.getElementById("photoPreview").src           = photoBase64;
     document.getElementById("photoPreview").style.display = "block";
     document.getElementById("video").style.display        = "none";
     document.getElementById("snapBtn").style.display      = "none";
     document.getElementById("retakeBtn").style.display    = "block";
-    showInfo("✅ Photo li gayi! Ab Clock In / Clock Out karo.");
+    showInfo("✅ Photo captured! Now click Clock In or Clock Out.");
     setStatus("");
   }
 
@@ -199,7 +215,7 @@
     document.getElementById("video").style.display        = "block";
     document.getElementById("snapBtn").style.display      = "block";
     document.getElementById("retakeBtn").style.display    = "none";
-    showInfo("✅ Camera ready — 📸 Photo Lo dabao.");
+    showInfo("✅ Camera ready — click Take Photo.");
     setStatus("");
   }
 
@@ -215,29 +231,53 @@
 
   // ── Clock In ─────────────────────────────────
   function clockIn() {
-    if (!photoBase64) { setStatus("⚠️ Pehle 📸 Photo Lo button dabao."); return; }
-    setStatus("📍 Location le raha hun…"); setBtns(true);
+    if (!photoBase64) { setStatus("⚠️ Please take a photo first."); return; }
+    setStatus("📍 Getting location…"); setBtns(true);
     getLocation(function(lat, lng) {
-      setStatus("⏳ Clock In ho raha hai…");
+      setStatus("⏳ Clocking In…");
       callScript("clockIn", { loginId: currentUser, name: currentName, lat, lng, photo: photoBase64 }, function(res) {
         setBtns(false);
-        setStatus(res.message && res.message.includes("Successful") ? "✅ " + res.message : "⚠️ " + (res.message || res));
-        if (res.message && res.message.includes("Successful")) retakePhoto();
+        const msg = res.message || "";
+        setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
+        if (msg.includes("Successful")) retakePhoto();
       });
     });
   }
 
   // ── Clock Out ────────────────────────────────
   function clockOut() {
-    if (!photoBase64) { setStatus("⚠️ Pehle 📸 Photo Lo button dabao."); return; }
-    setStatus("📍 Location le raha hun…"); setBtns(true);
+    if (!photoBase64) { setStatus("⚠️ Please take a photo first."); return; }
+    setStatus("📍 Getting location…"); setBtns(true);
     getLocation(function(lat, lng) {
-      setStatus("⏳ Clock Out ho raha hai…");
+      setStatus("⏳ Clocking Out…");
       callScript("clockOut", { loginId: currentUser, lat, lng, photo: photoBase64 }, function(res) {
         setBtns(false);
-        setStatus(res.message && res.message.includes("Successful") ? "✅ " + res.message : "⚠️ " + (res.message || res));
-        if (res.message && res.message.includes("Successful")) retakePhoto();
+        const msg = res.message || "";
+        setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
+        if (msg.includes("Successful")) retakePhoto();
       });
+    });
+  }
+
+  // ── Week Off ─────────────────────────────────
+  function markWeekOff() {
+    if (!confirm("Mark today as Week Off for " + currentName + "?")) return;
+    setBtns(true); setStatus("Marking Week Off…");
+    callScript("weekOff", { loginId: currentUser, name: currentName }, function(res) {
+      setBtns(false);
+      const msg = res.message || "";
+      setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
+    });
+  }
+
+  // ── Leave ────────────────────────────────────
+  function markLeave() {
+    if (!confirm("Mark today as Leave for " + currentName + "?")) return;
+    setBtns(true); setStatus("Marking Leave…");
+    callScript("leave", { loginId: currentUser, name: currentName }, function(res) {
+      setBtns(false);
+      const msg = res.message || "";
+      setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
     });
   }
 
