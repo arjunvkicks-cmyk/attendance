@@ -42,15 +42,15 @@
     }
     button:hover    { opacity: 0.88; }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
-    #loginBtn      { background: #3f51b5; color: #fff; }
-    #snapBtn       { background: #1a237e; color: #fff; }
-    #retakeBtn     { background: #ef6c00; color: #fff; display: none; }
-    #clockInBtn    { background: #43a047; color: #fff; }
-    #clockOutBtn   { background: #e53935; color: #fff; }
-    #weekOffBtn    { background: #7b1fa2; color: #fff; }
-    #leaveBtn      { background: #f57c00; color: #fff; }
-    #logoutBtn     { background: #757575; color: #fff; font-weight: 400; }
-    #statusMsg     { margin-top: 6px; font-size: 0.88rem; color: #555; min-height: 20px; line-height: 1.4; }
+    #loginBtn    { background: #3f51b5; color: #fff; }
+    #snapBtn     { background: #1a237e; color: #fff; }
+    #retakeBtn   { background: #ef6c00; color: #fff; display: none; }
+    #clockInBtn  { background: #43a047; color: #fff; }
+    #clockOutBtn { background: #e53935; color: #fff; }
+    #weekOffBtn  { background: #7b1fa2; color: #fff; }
+    #leaveBtn    { background: #f57c00; color: #fff; }
+    #logoutBtn   { background: #757575; color: #fff; font-weight: 400; }
+    #statusMsg   { margin-top: 6px; font-size: 0.88rem; color: #555; min-height: 20px; line-height: 1.4; }
     #infoBox {
       background: #e8f5e9; border-radius: 8px; padding: 8px 10px;
       font-size: 0.8rem; color: #2e7d32; margin-bottom: 10px; display: none;
@@ -59,13 +59,51 @@
       background: #ffebee; border-radius: 8px; padding: 8px 10px;
       font-size: 0.8rem; color: #c62828; margin-bottom: 10px; display: none;
     }
-    .divider {
-      border: none; border-top: 1px solid #eee;
-      margin: 4px 0 10px 0;
+    .divider { border: none; border-top: 1px solid #eee; margin: 4px 0 10px 0; }
+
+    /* ── SUCCESS POPUP ── */
+    #popupOverlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      justify-content: center; align-items: center;
     }
+    #popupOverlay.show { display: flex; }
+    #popupBox {
+      background: #fff; border-radius: 16px;
+      padding: 32px 28px; text-align: center;
+      width: 290px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      animation: popIn 0.3s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    #popupIcon  { font-size: 3rem; margin-bottom: 10px; }
+    #popupTitle { font-size: 1.2rem; font-weight: 700; color: #1a237e; margin-bottom: 8px; }
+    #popupMsg   { font-size: 0.95rem; color: #444; margin-bottom: 20px; line-height: 1.5; }
+    #popupBtn   {
+      background: #1a237e; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 10px 32px; font-size: 1rem;
+      cursor: pointer; font-weight: 600;
+    }
+    #popupBtn:hover { opacity: 0.88; }
   </style>
 </head>
 <body>
+
+<!-- ── SUCCESS POPUP ── -->
+<div id="popupOverlay">
+  <div id="popupBox">
+    <div id="popupIcon">✅</div>
+    <div id="popupTitle">Success!</div>
+    <div id="popupMsg"></div>
+    <button id="popupBtn" onclick="closePopup()">OK</button>
+  </div>
+</div>
+
 <div class="card">
 
   <!-- LOGIN -->
@@ -84,28 +122,22 @@
     <h3 id="welcome"></h3>
     <div id="infoBox"></div>
     <div id="errorBox"></div>
-
     <video id="video" autoplay playsinline muted></video>
     <img   id="photoPreview" alt="Captured Photo">
-
-    <button id="snapBtn"   onclick="snapPhoto()">📸 Take Photo</button>
-    <button id="retakeBtn" onclick="retakePhoto()">🔄 Retake Photo</button>
-
+    <button id="snapBtn"     onclick="snapPhoto()">📸 Take Photo</button>
+    <button id="retakeBtn"   onclick="retakePhoto()">🔄 Retake Photo</button>
     <button id="clockInBtn"  onclick="clockIn()">✅ Clock In</button>
     <button id="clockOutBtn" onclick="clockOut()">🔴 Clock Out</button>
-
     <hr class="divider">
-
     <button id="weekOffBtn" onclick="markWeekOff()">📅 Week Off</button>
     <button id="leaveBtn"   onclick="markLeave()">🏖️ Mark Leave</button>
-
     <hr class="divider">
-
-    <button id="logoutBtn" onclick="logout()">Logout</button>
+    <button id="logoutBtn"  onclick="logout()">Logout</button>
     <div id="statusMsg"></div>
   </div>
 
 </div>
+
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxz44L38utZ0rsvkunrGGirVrgKXDfrIKR7__A2M79obycmZ5szE1U3OiBuExDEs3Yk/exec";
 
@@ -123,6 +155,17 @@
       const el = document.getElementById(id);
       if (el) el.disabled = flag;
     });
+  }
+
+  // ── Popup ────────────────────────────────────
+  function showPopup(icon, title, msg) {
+    document.getElementById("popupIcon").textContent  = icon;
+    document.getElementById("popupTitle").textContent = title;
+    document.getElementById("popupMsg").textContent   = msg;
+    document.getElementById("popupOverlay").classList.add("show");
+  }
+  function closePopup() {
+    document.getElementById("popupOverlay").classList.remove("show");
   }
 
   // ── API Call ─────────────────────────────────
@@ -146,20 +189,15 @@
     const loginId  = document.getElementById("loginId").value.trim();
     const password = document.getElementById("password").value.trim();
     if (!loginId || !password) { setStatus("⚠️ Please enter Login ID and Password."); return; }
-
-    setStatus("Logging in…");
-    setBtns(true);
-
+    setStatus("Logging in…"); setBtns(true);
     callScript("login", { loginId, password }, function(res) {
       setBtns(false);
       if (res.status) {
-        currentUser = loginId;
-        currentName = res.name;
+        currentUser = loginId; currentName = res.name;
         document.getElementById("loginDiv").style.display      = "none";
         document.getElementById("attendanceDiv").style.display = "block";
         document.getElementById("welcome").textContent = "Welcome, " + res.name + " 👋";
-        setStatus("");
-        startCamera();
+        setStatus(""); startCamera();
       } else {
         setStatus("❌ " + (res.message || "Invalid Login."));
       }
@@ -173,19 +211,17 @@
     .then(function(stream) {
       cameraStream = stream;
       const video = document.getElementById("video");
-      video.srcObject = stream;
-      video.style.display = "block";
+      video.srcObject = stream; video.style.display = "block";
       video.onloadedmetadata = function() {
         video.play();
         showInfo("✅ Camera ready — click Take Photo.");
       };
     })
     .catch(function(err) {
-      showError("❌ Camera error: " + err.message + " — Please allow camera in browser.");
+      showError("❌ Camera error: " + err.message + " — Allow camera in browser settings.");
       showInfo("");
     });
   }
-
   function stopCamera() {
     if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   }
@@ -198,7 +234,6 @@
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
     photoBase64 = canvas.toDataURL("image/jpeg", 0.7);
-
     document.getElementById("photoPreview").src           = photoBase64;
     document.getElementById("photoPreview").style.display = "block";
     document.getElementById("video").style.display        = "none";
@@ -207,7 +242,6 @@
     showInfo("✅ Photo captured! Now click Clock In or Clock Out.");
     setStatus("");
   }
-
   function retakePhoto() {
     photoBase64 = "";
     document.getElementById("photoPreview").style.display = "none";
@@ -219,13 +253,22 @@
     setStatus("");
   }
 
-  // ── Geolocation ──────────────────────────────
+  // ── Geolocation — FIX: timeout increased + high accuracy ──
   function getLocation(callback) {
     if (!navigator.geolocation) { callback(null, null); return; }
     navigator.geolocation.getCurrentPosition(
-      p  => callback(p.coords.latitude, p.coords.longitude),
-      () => callback(null, null),
-      { timeout: 10000 }
+      function(pos) {
+        callback(pos.coords.latitude, pos.coords.longitude);
+      },
+      function(err) {
+        console.warn("Location error:", err.message);
+        callback(null, null); // proceed without location, don't block
+      },
+      {
+        enableHighAccuracy: true,  // FIX: better GPS accuracy
+        timeout: 15000,            // FIX: 15 sec timeout (was 10)
+        maximumAge: 0              // FIX: always fresh location, no cache
+      }
     );
   }
 
@@ -238,8 +281,13 @@
       callScript("clockIn", { loginId: currentUser, name: currentName, lat, lng, photo: photoBase64 }, function(res) {
         setBtns(false);
         const msg = res.message || "";
-        setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
-        if (msg.includes("Successful")) retakePhoto();
+        if (msg.includes("Successful")) {
+          setStatus("");
+          showPopup("✅", "Clock In Successful!", "Your attendance has been recorded.\n" + new Date().toLocaleTimeString());
+          retakePhoto();
+        } else {
+          setStatus("⚠️ " + msg);
+        }
       });
     });
   }
@@ -253,8 +301,13 @@
       callScript("clockOut", { loginId: currentUser, lat, lng, photo: photoBase64 }, function(res) {
         setBtns(false);
         const msg = res.message || "";
-        setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
-        if (msg.includes("Successful")) retakePhoto();
+        if (msg.includes("Successful")) {
+          setStatus("");
+          showPopup("🔴", "Clock Out Successful!", "Your departure has been recorded.\n" + new Date().toLocaleTimeString());
+          retakePhoto();
+        } else {
+          setStatus("⚠️ " + msg);
+        }
       });
     });
   }
@@ -266,7 +319,12 @@
     callScript("weekOff", { loginId: currentUser, name: currentName }, function(res) {
       setBtns(false);
       const msg = res.message || "";
-      setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
+      if (msg.includes("Successful")) {
+        setStatus("");
+        showPopup("📅", "Week Off Marked!", "Your week off has been recorded for today.");
+      } else {
+        setStatus("⚠️ " + msg);
+      }
     });
   }
 
@@ -277,7 +335,12 @@
     callScript("leave", { loginId: currentUser, name: currentName }, function(res) {
       setBtns(false);
       const msg = res.message || "";
-      setStatus(msg.includes("Successful") ? "✅ " + msg : "⚠️ " + msg);
+      if (msg.includes("Successful")) {
+        setStatus("");
+        showPopup("🏖️", "Leave Marked!", "Your leave has been recorded for today.");
+      } else {
+        setStatus("⚠️ " + msg);
+      }
     });
   }
 
