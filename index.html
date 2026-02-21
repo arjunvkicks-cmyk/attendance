@@ -253,21 +253,28 @@
     setStatus("");
   }
 
-  // ── Geolocation — FIX: timeout increased + high accuracy ──
+  // ── Geolocation — MANDATORY, blocks if no location ─────
   function getLocation(callback) {
-    if (!navigator.geolocation) { callback(null, null); return; }
+    if (!navigator.geolocation) {
+      setBtns(false);
+      setStatus("❌ Location not supported on this device/browser.");
+      return;
+    }
+    setStatus("📍 Please allow location access…");
     navigator.geolocation.getCurrentPosition(
       function(pos) {
         callback(pos.coords.latitude, pos.coords.longitude);
       },
       function(err) {
-        console.warn("Location error:", err.message);
-        callback(null, null); // proceed without location, don't block
+        // BLOCK — do not proceed without location
+        setBtns(false);
+        setStatus("❌ Location access denied. Please allow location and try again.");
+        showPopup("📍", "Location Required!", "Please allow location access in your browser and try again.\n\nSteps:\n1. Click the 🔒 lock icon in address bar\n2. Set Location → Allow\n3. Refresh and try again");
       },
       {
-        enableHighAccuracy: true,  // FIX: better GPS accuracy
-        timeout: 15000,            // FIX: 15 sec timeout (was 10)
-        maximumAge: 0              // FIX: always fresh location, no cache
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
       }
     );
   }
@@ -283,7 +290,7 @@
         const msg = res.message || "";
         if (msg.includes("Successful")) {
           setStatus("");
-          showPopup("✅", "Clock In Successful!", "Your attendance has been recorded.\n" + new Date().toLocaleTimeString());
+          showPopup("✅", "Clock In Successful!", "Your attendance has been recorded.\nTime: " + new Date().toLocaleTimeString());
           retakePhoto();
         } else {
           setStatus("⚠️ " + msg);
@@ -303,7 +310,7 @@
         const msg = res.message || "";
         if (msg.includes("Successful")) {
           setStatus("");
-          showPopup("🔴", "Clock Out Successful!", "Your departure has been recorded.\n" + new Date().toLocaleTimeString());
+          showPopup("🔴", "Clock Out Successful!", "Your departure has been recorded.\nTime: " + new Date().toLocaleTimeString());
           retakePhoto();
         } else {
           setStatus("⚠️ " + msg);
