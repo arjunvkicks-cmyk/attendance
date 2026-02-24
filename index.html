@@ -6,41 +6,31 @@
   <title>Vault Kicks Attendance</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh;
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px 0; }
+    .card { background: #fff; border-radius: 12px; padding: 24px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 360px; text-align: center; }
+    h2 { color: #1a237e; margin-bottom: 16px; font-size: 1.3rem; }
+    h3 { color: #444; margin-bottom: 12px; font-size: 1rem; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: #f0f4f8; border-radius: 8px; padding: 4px; }
+    .tab { flex: 1; padding: 8px 4px; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: transparent; color: #666; transition: all 0.2s; }
+    .tab.active { background: #1a237e; color: #fff; }
+
+    /* Tab content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    input[type="text"], input[type="password"], input[type="date"], select {
+      width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px;
+      margin-bottom: 10px; font-size: 0.95rem;
     }
-    .card {
-      background: #fff; border-radius: 12px;
-      padding: 28px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      width: 340px; text-align: center;
-    }
-    h2 { color: #1a237e; margin-bottom: 20px; font-size: 1.3rem; }
-    h3 { color: #444; margin-bottom: 14px; font-size: 1rem; }
-    input[type="text"], input[type="password"] {
-      width: 100%; padding: 10px 14px;
-      border: 1px solid #ccc; border-radius: 8px;
-      margin-bottom: 12px; font-size: 0.95rem;
-    }
-    input:focus { outline: none; border-color: #3f51b5; }
-    #video {
-      width: 100%; border-radius: 10px;
-      background: #111; display: block;
-      margin-bottom: 10px; min-height: 200px;
-    }
-    #photoPreview {
-      width: 100%; border-radius: 10px;
-      border: 2px solid #43a047;
-      display: none; margin-bottom: 10px;
-    }
-    button {
-      width: 100%; padding: 11px; border: none; border-radius: 8px;
-      font-size: 1rem; cursor: pointer; margin-bottom: 10px;
-      transition: opacity 0.2s; font-weight: 600;
-    }
-    button:hover    { opacity: 0.88; }
+    input:focus, select:focus { outline: none; border-color: #3f51b5; }
+
+    #video { width: 100%; border-radius: 10px; background: #111; display: block; margin-bottom: 10px; min-height: 180px; }
+    #photoPreview { width: 100%; border-radius: 10px; border: 2px solid #43a047; display: none; margin-bottom: 10px; }
+
+    button { width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer; margin-bottom: 8px; transition: opacity 0.2s; font-weight: 600; }
+    button:hover { opacity: 0.88; }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
     #loginBtn    { background: #3f51b5; color: #fff; }
     #snapBtn     { background: #1a237e; color: #fff; }
@@ -49,53 +39,79 @@
     #clockOutBtn { background: #e53935; color: #fff; }
     #weekOffBtn  { background: #7b1fa2; color: #fff; }
     #leaveBtn    { background: #f57c00; color: #fff; }
-    #logoutBtn   { background: #757575; color: #fff; font-weight: 400; }
     #compOffBtn  { background: #00897b; color: #fff; }
-    #statusMsg   { margin-top: 6px; font-size: 0.88rem; color: #555; min-height: 20px; line-height: 1.4; }
-    #infoBox {
-      background: #e8f5e9; border-radius: 8px; padding: 8px 10px;
-      font-size: 0.8rem; color: #2e7d32; margin-bottom: 10px; display: none;
-    }
-    #errorBox {
-      background: #ffebee; border-radius: 8px; padding: 8px 10px;
-      font-size: 0.8rem; color: #c62828; margin-bottom: 10px; display: none;
-    }
-    .divider { border: none; border-top: 1px solid #eee; margin: 4px 0 10px 0; }
+    #logoutBtn   { background: #757575; color: #fff; font-weight: 400; }
+    #applyBtn    { background: #1a237e; color: #fff; }
+    .btn-export  { background: #2e7d32; color: #fff; font-size: 0.85rem; padding: 8px; }
 
-    /* ── SUCCESS POPUP ── */
-    #popupOverlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 999;
-      justify-content: center; align-items: center;
-    }
+    #statusMsg { margin-top: 4px; font-size: 0.85rem; color: #555; min-height: 18px; line-height: 1.4; }
+    #infoBox { background: #e8f5e9; border-radius: 8px; padding: 8px 10px; font-size: 0.8rem; color: #2e7d32; margin-bottom: 8px; display: none; }
+    #errorBox { background: #ffebee; border-radius: 8px; padding: 8px 10px; font-size: 0.8rem; color: #c62828; margin-bottom: 8px; display: none; }
+    .divider { border: none; border-top: 1px solid #eee; margin: 4px 0 8px 0; }
+
+    /* Summary cards */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .summary-card { border-radius: 8px; padding: 10px 6px; text-align: center; }
+    .summary-card .num  { font-size: 1.5rem; font-weight: 700; }
+    .summary-card .lbl  { font-size: 0.7rem; font-weight: 600; margin-top: 2px; }
+    .sc-present  { background: #e8f5e9; color: #2e7d32; }
+    .sc-leave    { background: #fff3e0; color: #e65100; }
+    .sc-weekoff  { background: #f3e5f5; color: #6a1b9a; }
+    .sc-compoff  { background: #e0f2f1; color: #00695c; }
+    .sc-absent   { background: #ffebee; color: #b71c1c; }
+    .sc-total    { background: #e3f2fd; color: #0d47a1; }
+
+    /* Calendar */
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .cal-header span { font-weight: 700; font-size: 1rem; color: #1a237e; }
+    .cal-nav { background: none; border: 1px solid #ccc; border-radius: 6px; width: 30px; padding: 4px; cursor: pointer; font-size: 1rem; color: #333; margin: 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-day-name { font-size: 0.65rem; font-weight: 700; color: #888; text-align: center; padding: 2px 0; }
+    .cal-day { border-radius: 6px; padding: 6px 2px; text-align: center; font-size: 0.75rem; font-weight: 600; min-height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: default; }
+    .cal-day .day-num { font-size: 0.8rem; }
+    .cal-day .day-status { font-size: 0.55rem; margin-top: 1px; }
+    .cal-empty    { background: transparent; }
+    .cal-present  { background: #c8e6c9; color: #1b5e20; }
+    .cal-leave    { background: #ffe0b2; color: #e65100; }
+    .cal-weekoff  { background: #e1bee7; color: #4a148c; }
+    .cal-compoff  { background: #b2dfdb; color: #004d40; }
+    .cal-absent   { background: #ffcdd2; color: #b71c1c; }
+    .cal-today    { outline: 2px solid #1a237e; }
+    .cal-future   { background: #f5f5f5; color: #bbb; }
+    .cal-nodata   { background: #f5f5f5; color: #999; }
+
+    /* Records table */
+    .records-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
+    .records-table th { background: #1a237e; color: #fff; padding: 6px 4px; text-align: left; }
+    .records-table td { padding: 5px 4px; border-bottom: 1px solid #eee; }
+    .records-table tr:nth-child(even) td { background: #f5f5f5; }
+    .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .badge-present { background: #c8e6c9; color: #1b5e20; }
+    .badge-leave   { background: #ffe0b2; color: #e65100; }
+    .badge-weekoff { background: #e1bee7; color: #4a148c; }
+    .badge-compoff { background: #b2dfdb; color: #004d40; }
+    .badge-absent  { background: #ffcdd2; color: #b71c1c; }
+
+    /* Legend */
+    .legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
+    .legend-item { display: flex; align-items: center; gap: 3px; font-size: 0.68rem; color: #555; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* Popup */
+    #popupOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center; }
     #popupOverlay.show { display: flex; }
-    #popupBox {
-      background: #fff; border-radius: 16px;
-      padding: 32px 28px; text-align: center;
-      width: 290px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-      animation: popIn 0.3s ease;
-    }
-    @keyframes popIn {
-      from { transform: scale(0.7); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
-    }
-    #popupIcon  { font-size: 3rem; margin-bottom: 10px; }
-    #popupTitle { font-size: 1.2rem; font-weight: 700; color: #1a237e; margin-bottom: 8px; }
-    #popupMsg   { font-size: 0.95rem; color: #444; margin-bottom: 20px; line-height: 1.5; }
-    #popupBtn   {
-      background: #1a237e; color: #fff;
-      border: none; border-radius: 8px;
-      padding: 10px 32px; font-size: 1rem;
-      cursor: pointer; font-weight: 600;
-    }
-    #popupBtn:hover { opacity: 0.88; }
+    #popupBox { background: #fff; border-radius: 16px; padding: 28px 24px; text-align: center; width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); animation: popIn 0.3s ease; }
+    @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #popupIcon  { font-size: 2.5rem; margin-bottom: 8px; }
+    #popupTitle { font-size: 1.1rem; font-weight: 700; color: #1a237e; margin-bottom: 6px; }
+    #popupMsg   { font-size: 0.88rem; color: #444; margin-bottom: 16px; line-height: 1.5; white-space: pre-line; }
+    #popupBtn   { background: #1a237e; color: #fff; border: none; border-radius: 8px; padding: 9px 28px; font-size: 0.95rem; cursor: pointer; font-weight: 600; width: auto; }
+
+    .loading-spinner { color: #888; font-size: 0.85rem; padding: 20px; }
+    .section-title { font-size: 0.85rem; font-weight: 700; color: #1a237e; text-align: left; margin-bottom: 8px; margin-top: 4px; }
   </style>
 </head>
 <body>
-
-<!-- ── SUCCESS POPUP ── -->
 <div id="popupOverlay">
   <div id="popupBox">
     <div id="popupIcon">✅</div>
@@ -106,38 +122,91 @@
 </div>
 
 <div class="card">
-
   <!-- LOGIN -->
   <div id="loginDiv">
-    <h2>🏢 Attendance System</h2>
+    <h2>🏢 Vault Kicks Attendance</h2>
     <input type="text"     id="loginId"  placeholder="Login ID"  autocomplete="username">
-    <input type="password" id="password" placeholder="Password"  autocomplete="current-password"
-      onkeydown="if(event.key==='Enter') login()">
+    <input type="password" id="password" placeholder="Password"  autocomplete="current-password" onkeydown="if(event.key==='Enter') login()">
     <button id="loginBtn" onclick="login()">Login</button>
     <div id="statusMsg"></div>
   </div>
 
   <!-- ATTENDANCE -->
   <div id="attendanceDiv" style="display:none;">
-    <h2>🏢 Attendance System</h2>
+    <h2>🏢 Vault Kicks Attendance</h2>
     <h3 id="welcome"></h3>
-    <div id="infoBox"></div>
-    <div id="errorBox"></div>
-    <video id="video" autoplay playsinline muted></video>
-    <img   id="photoPreview" alt="Captured Photo">
-    <button id="snapBtn"     onclick="snapPhoto()">📸 Take Photo</button>
-    <button id="retakeBtn"   onclick="retakePhoto()">🔄 Retake Photo</button>
-    <button id="clockInBtn"  onclick="clockIn()">✅ Clock In</button>
-    <button id="clockOutBtn" onclick="clockOut()">🔴 Clock Out</button>
-    <hr class="divider">
-    <button id="weekOffBtn" onclick="markWeekOff()">📅 Week Off</button>
-    <button id="leaveBtn"   onclick="markLeave()">🏖️ Mark Leave</button>
-    <button id="compOffBtn" onclick="markCompOff()">🎁 Comp Off</button>
-    <hr class="divider">
-    <button id="logoutBtn"  onclick="logout()">Logout</button>
-    <div id="statusMsg"></div>
-  </div>
 
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('mark')">📸 Mark</button>
+      <button class="tab" onclick="switchTab('calendar')">📅 Calendar</button>
+      <button class="tab" onclick="switchTab('records')">📋 Records</button>
+      <button class="tab" onclick="switchTab('apply')">✏️ Apply</button>
+    </div>
+
+    <!-- TAB: MARK ATTENDANCE -->
+    <div id="tab-mark" class="tab-content active">
+      <div id="infoBox"></div>
+      <div id="errorBox"></div>
+      <video id="video" autoplay playsinline muted></video>
+      <img   id="photoPreview" alt="Captured Photo">
+      <button id="snapBtn"     onclick="snapPhoto()">📸 Take Photo</button>
+      <button id="retakeBtn"   onclick="retakePhoto()">🔄 Retake Photo</button>
+      <button id="clockInBtn"  onclick="clockIn()">✅ Clock In</button>
+      <button id="clockOutBtn" onclick="clockOut()">🔴 Clock Out</button>
+      <hr class="divider">
+      <button id="weekOffBtn" onclick="markWeekOff()">📅 Week Off</button>
+      <button id="leaveBtn"   onclick="markLeave()">🏖️ Mark Leave</button>
+      <button id="compOffBtn" onclick="markCompOff()">🎁 Comp Off</button>
+      <hr class="divider">
+      <button id="logoutBtn"  onclick="logout()">Logout</button>
+      <div id="statusMsg"></div>
+    </div>
+
+    <!-- TAB: CALENDAR -->
+    <div id="tab-calendar" class="tab-content">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#c8e6c9"></div> Present</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffcdd2"></div> Absent</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffe0b2"></div> Leave</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e1bee7"></div> Week Off</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#b2dfdb"></div> Comp Off</div>
+      </div>
+      <div class="cal-header">
+        <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+        <span id="calMonthLabel"></span>
+        <button class="cal-nav" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div style="margin-top:12px;">
+        <div class="summary-grid" id="summaryGrid"></div>
+      </div>
+    </div>
+
+    <!-- TAB: RECORDS -->
+    <div id="tab-records" class="tab-content">
+      <div class="section-title">📋 My Attendance Records</div>
+      <button class="btn-export" onclick="exportCSV()" style="margin-bottom:10px;">⬇️ Export to Excel/CSV</button>
+      <div id="recordsTable"><div class="loading-spinner">Loading…</div></div>
+    </div>
+
+    <!-- TAB: APPLY -->
+    <div id="tab-apply" class="tab-content">
+      <div class="section-title">✏️ Apply for Past / Future Date</div>
+      <p style="font-size:0.8rem;color:#666;margin-bottom:10px;text-align:left;">Mark leave, week off, or comp off for any date.</p>
+      <label style="font-size:0.82rem;color:#444;display:block;text-align:left;margin-bottom:4px;">Select Date</label>
+      <input type="date" id="applyDate">
+      <label style="font-size:0.82rem;color:#444;display:block;text-align:left;margin-bottom:4px;">Type</label>
+      <select id="applyType">
+        <option value="leave">🏖️ Leave</option>
+        <option value="weekOff">📅 Week Off</option>
+        <option value="compOff">🎁 Comp Off</option>
+      </select>
+      <button id="applyBtn" onclick="applyStatus()">✅ Apply</button>
+      <div id="applyMsg" style="font-size:0.85rem;color:#555;margin-top:6px;"></div>
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -147,46 +216,54 @@
   let currentName  = "";
   let cameraStream = null;
   let photoBase64  = "";
+  let myData       = [];
+  let calYear      = new Date().getFullYear();
+  let calMonth     = new Date().getMonth();
 
   // ── Helpers ──────────────────────────────────
   function setStatus(msg) { document.getElementById("statusMsg").textContent = msg; }
   function showInfo(msg)  { const b = document.getElementById("infoBox");  b.textContent = msg; b.style.display = msg ? "block" : "none"; }
   function showError(msg) { const b = document.getElementById("errorBox"); b.textContent = msg; b.style.display = msg ? "block" : "none"; }
   function setBtns(flag) {
-    ["loginBtn","clockInBtn","clockOutBtn","snapBtn","weekOffBtn","leaveBtn","compOffBtn"].forEach(id => {
+    ["loginBtn","clockInBtn","clockOutBtn","snapBtn","weekOffBtn","leaveBtn","compOffBtn","applyBtn"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = flag;
     });
   }
 
-  // ── Popup ────────────────────────────────────
   function showPopup(icon, title, msg) {
     document.getElementById("popupIcon").textContent  = icon;
     document.getElementById("popupTitle").textContent = title;
     document.getElementById("popupMsg").textContent   = msg;
     document.getElementById("popupOverlay").classList.add("show");
   }
-  function closePopup() {
-    document.getElementById("popupOverlay").classList.remove("show");
-  }
+  function closePopup() { document.getElementById("popupOverlay").classList.remove("show"); }
 
-  // ── API Call ─────────────────────────────────
   function callScript(action, data, callback) {
-    const params = Object.assign({ action }, data);
     fetch(SCRIPT_URL, {
       method: "POST",
-      body: JSON.stringify(params),
+      body: JSON.stringify(Object.assign({ action }, data)),
       headers: { "Content-Type": "text/plain" }
     })
     .then(r => r.json())
     .then(callback)
-    .catch(function(err) {
-      setBtns(false);
-      setStatus("❌ Network error: " + err.message);
-    });
+    .catch(err => { setBtns(false); setStatus("❌ Network error: " + err.message); });
   }
 
-  // ── Login ────────────────────────────────────
+  // ── Tabs ─────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll(".tab").forEach((t, i) => {
+      const names = ["mark","calendar","records","apply"];
+      t.classList.toggle("active", names[i] === tab);
+    });
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    document.getElementById("tab-" + tab).classList.add("active");
+
+    if (tab === "calendar") { loadMyData(); }
+    if (tab === "records")  { loadMyData(); }
+  }
+
+  // ── Login ─────────────────────────────────────
   function login() {
     const loginId  = document.getElementById("loginId").value.trim();
     const password = document.getElementById("password").value.trim();
@@ -199,6 +276,8 @@
         document.getElementById("loginDiv").style.display      = "none";
         document.getElementById("attendanceDiv").style.display = "block";
         document.getElementById("welcome").textContent = "Welcome, " + res.name + " 👋";
+        // Set today as default apply date
+        document.getElementById("applyDate").value = new Date().toISOString().split("T")[0];
         setStatus(""); startCamera();
       } else {
         setStatus("❌ " + (res.message || "Invalid Login."));
@@ -206,7 +285,7 @@
     });
   }
 
-  // ── Camera ───────────────────────────────────
+  // ── Camera ─────────────────────────────────────
   function startCamera() {
     showError(""); showInfo("Starting camera…");
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
@@ -214,10 +293,7 @@
       cameraStream = stream;
       const video = document.getElementById("video");
       video.srcObject = stream; video.style.display = "block";
-      video.onloadedmetadata = function() {
-        video.play();
-        showInfo("✅ Camera ready — click Take Photo.");
-      };
+      video.onloadedmetadata = function() { video.play(); showInfo("✅ Camera ready — click Take Photo."); };
     })
     .catch(function(err) {
       showError("❌ Camera error: " + err.message + " — Allow camera in browser settings.");
@@ -228,7 +304,7 @@
     if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
   }
 
-  // ── Snap / Retake ────────────────────────────
+  // ── Snap / Retake ──────────────────────────────
   function snapPhoto() {
     const video = document.getElementById("video");
     if (!video.videoWidth) { setStatus("⚠️ Camera not ready, please wait."); return; }
@@ -255,33 +331,22 @@
     setStatus("");
   }
 
-  // ── Geolocation — MANDATORY, blocks if no location ─────
+  // ── Location MANDATORY ─────────────────────────
   function getLocation(callback) {
-    if (!navigator.geolocation) {
-      setBtns(false);
-      setStatus("❌ Location not supported on this device/browser.");
-      return;
-    }
+    if (!navigator.geolocation) { setBtns(false); setStatus("❌ Location not supported."); return; }
     setStatus("📍 Please allow location access…");
     navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        callback(pos.coords.latitude, pos.coords.longitude);
-      },
-      function(err) {
-        // BLOCK — do not proceed without location
+      p  => callback(p.coords.latitude, p.coords.longitude),
+      () => {
         setBtns(false);
-        setStatus("❌ Location access denied. Please allow location and try again.");
-        showPopup("📍", "Location Required!", "Please allow location access in your browser and try again.\n\nSteps:\n1. Click the 🔒 lock icon in address bar\n2. Set Location → Allow\n3. Refresh and try again");
+        setStatus("❌ Location denied. Please allow and try again.");
+        showPopup("📍", "Location Required!", "Please allow location access in browser.\n\n1. Click 🔒 in address bar\n2. Set Location → Allow\n3. Refresh and try again");
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
 
-  // ── Clock In ─────────────────────────────────
+  // ── Clock In ──────────────────────────────────
   function clockIn() {
     if (!photoBase64) { setStatus("⚠️ Please take a photo first."); return; }
     setStatus("📍 Getting location…"); setBtns(true);
@@ -291,17 +356,15 @@
         setBtns(false);
         const msg = res.message || "";
         if (msg.includes("Successful")) {
-          setStatus("");
-          showPopup("✅", "Clock In Successful!", "Your attendance has been recorded.\nTime: " + new Date().toLocaleTimeString());
+          setStatus(""); myData = [];
+          showPopup("✅", "Clock In Successful!", "Attendance recorded.\nTime: " + new Date().toLocaleTimeString());
           retakePhoto();
-        } else {
-          setStatus("⚠️ " + msg);
-        }
+        } else { setStatus("⚠️ " + msg); }
       });
     });
   }
 
-  // ── Clock Out ────────────────────────────────
+  // ── Clock Out ─────────────────────────────────
   function clockOut() {
     if (!photoBase64) { setStatus("⚠️ Please take a photo first."); return; }
     setStatus("📍 Getting location…"); setBtns(true);
@@ -311,73 +374,192 @@
         setBtns(false);
         const msg = res.message || "";
         if (msg.includes("Successful")) {
-          setStatus("");
-          showPopup("🔴", "Clock Out Successful!", "Your departure has been recorded.\nTime: " + new Date().toLocaleTimeString());
+          setStatus(""); myData = [];
+          showPopup("🔴", "Clock Out Successful!", "Departure recorded.\nTime: " + new Date().toLocaleTimeString());
           retakePhoto();
-        } else {
-          setStatus("⚠️ " + msg);
-        }
+        } else { setStatus("⚠️ " + msg); }
       });
     });
   }
 
-  // ── Week Off ─────────────────────────────────
-  function markWeekOff() {
-    if (!confirm("Mark today as Week Off for " + currentName + "?")) return;
-    setBtns(true); setStatus("Marking Week Off…");
-    callScript("weekOff", { loginId: currentUser, name: currentName }, function(res) {
+  // ── Week Off / Leave / Comp Off (today) ────────
+  function markWeekOff() { markToday("weekOff", "Week Off", "📅", "Week Off Marked!"); }
+  function markLeave()   { markToday("leave",   "Leave",    "🏖️", "Leave Marked!"); }
+  function markCompOff() { markToday("compOff", "Comp Off", "🎁", "Comp Off Marked!"); }
+
+  function markToday(action, label, icon, title) {
+    if (!confirm("Mark today as " + label + " for " + currentName + "?")) return;
+    setBtns(true); setStatus("Marking " + label + "…");
+    callScript(action, { loginId: currentUser, name: currentName }, function(res) {
       setBtns(false);
       const msg = res.message || "";
       if (msg.includes("Successful")) {
-        setStatus("");
-        showPopup("📅", "Week Off Marked!", "Your week off has been recorded for today.");
-      } else {
-        setStatus("⚠️ " + msg);
+        setStatus(""); myData = [];
+        showPopup(icon, title, label + " has been recorded for today.");
+      } else { setStatus("⚠️ " + msg); }
+    });
+  }
+
+  // ── Apply for any date ─────────────────────────
+  function applyStatus() {
+    const dateVal = document.getElementById("applyDate").value;
+    const type    = document.getElementById("applyType").value;
+    if (!dateVal) { document.getElementById("applyMsg").textContent = "⚠️ Please select a date."; return; }
+
+    const labels = { leave: "Leave", weekOff: "Week Off", compOff: "Comp Off" };
+    const icons  = { leave: "🏖️", weekOff: "📅", compOff: "🎁" };
+    const label  = labels[type];
+
+    if (!confirm("Mark " + dateVal + " as " + label + " for " + currentName + "?")) return;
+
+    document.getElementById("applyBtn").disabled = true;
+    document.getElementById("applyMsg").textContent = "Applying…";
+
+    callScript(type, { loginId: currentUser, name: currentName, date: dateVal }, function(res) {
+      document.getElementById("applyBtn").disabled = false;
+      const msg = res.message || "";
+      document.getElementById("applyMsg").textContent = msg;
+      if (msg.includes("Successful")) {
+        myData = [];
+        showPopup(icons[type], label + " Marked!", label + " recorded for " + dateVal);
       }
     });
   }
 
-  // ── Leave ────────────────────────────────────
-  function markLeave() {
-    if (!confirm("Mark today as Leave for " + currentName + "?")) return;
-    setBtns(true); setStatus("Marking Leave…");
-    callScript("leave", { loginId: currentUser, name: currentName }, function(res) {
-      setBtns(false);
-      const msg = res.message || "";
-      if (msg.includes("Successful")) {
-        setStatus("");
-        showPopup("🏖️", "Leave Marked!", "Your leave has been recorded for today.");
-      } else {
-        setStatus("⚠️ " + msg);
+  // ── Load My Data ───────────────────────────────
+  function loadMyData() {
+    if (myData.length > 0) {
+      renderCalendar();
+      renderRecords();
+      return;
+    }
+    callScript("getMyData", { loginId: currentUser }, function(res) {
+      if (res.rows) {
+        myData = res.rows;
+        renderCalendar();
+        renderRecords();
+        renderSummary(res.summary);
       }
     });
   }
 
-  // ── Comp Off ─────────────────────────────────
-  function markCompOff() {
-    if (!confirm("Mark today as Comp Off for " + currentName + "?")) return;
-    setBtns(true); setStatus("Marking Comp Off…");
-    callScript("compOff", { loginId: currentUser, name: currentName }, function(res) {
-      setBtns(false);
-      const msg = res.message || "";
-      if (msg.includes("Successful")) {
-        setStatus("");
-        showPopup("🎁", "Comp Off Marked!", "Your comp off has been recorded for today.");
+  // ── Calendar ───────────────────────────────────
+  function changeMonth(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0)  { calMonth = 11; calYear--; }
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    document.getElementById("calMonthLabel").textContent = months[calMonth] + " " + calYear;
+
+    const today = new Date();
+    const todayStr = toDateStr(today);
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+    // Build date→status map
+    const statusMap = {};
+    myData.forEach(r => { statusMap[r.date] = r; });
+
+    let html = "";
+    ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(d => {
+      html += `<div class="cal-day-name">${d}</div>`;
+    });
+
+    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day cal-empty"></div>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = calYear + "-" + String(calMonth+1).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+      const isToday = dateStr === todayStr;
+      const isFuture = dateStr > todayStr;
+      const rec = statusMap[dateStr];
+
+      let cls = "cal-day ";
+      let statusLabel = "";
+
+      if (isFuture) {
+        cls += "cal-future";
+      } else if (rec) {
+        const s = (rec.status || "").toLowerCase();
+        if (s === "present")  { cls += "cal-present"; statusLabel = "P"; }
+        else if (s === "leave")    { cls += "cal-leave";   statusLabel = "L"; }
+        else if (s === "week off") { cls += "cal-weekoff"; statusLabel = "WO"; }
+        else if (s === "comp off") { cls += "cal-compoff"; statusLabel = "CO"; }
+        else { cls += "cal-nodata"; }
       } else {
-        setStatus("⚠️ " + msg);
+        cls += "cal-absent"; statusLabel = "A";
+      }
+
+      if (isToday) cls += " cal-today";
+      html += `<div class="${cls}"><div class="day-num">${d}</div><div class="day-status">${statusLabel}</div></div>`;
+    }
+
+    document.getElementById("calGrid").innerHTML = html;
+  }
+
+  function renderSummary(summary) {
+    if (!summary) return;
+    const grid = document.getElementById("summaryGrid");
+    grid.innerHTML = `
+      <div class="summary-card sc-present"><div class="num">${summary.present}</div><div class="lbl">✅ Present</div></div>
+      <div class="summary-card sc-absent"><div class="num">${summary.absent || 0}</div><div class="lbl">❌ Absent</div></div>
+      <div class="summary-card sc-leave"><div class="num">${summary.leave}</div><div class="lbl">🏖️ Leave</div></div>
+      <div class="summary-card sc-weekoff"><div class="num">${summary.weekOff}</div><div class="lbl">📅 Week Off</div></div>
+      <div class="summary-card sc-compoff"><div class="num">${summary.compOff}</div><div class="lbl">🎁 Comp Off</div></div>
+      <div class="summary-card sc-total"><div class="num">${summary.total}</div><div class="lbl">📊 Total</div></div>
+    `;
+  }
+
+  // ── Records Table ──────────────────────────────
+  function renderRecords() {
+    if (myData.length === 0) {
+      document.getElementById("recordsTable").innerHTML = "<p style='color:#888;font-size:0.85rem;'>No records found.</p>";
+      return;
+    }
+    const sorted = [...myData].sort((a,b) => b.date.localeCompare(a.date));
+    let html = `<table class="records-table"><thead><tr><th>Date</th><th>Status</th><th>In</th><th>Out</th></tr></thead><tbody>`;
+    sorted.forEach(r => {
+      const s = (r.status || "").toLowerCase().replace(" ","");
+      const badge = `<span class="badge badge-${s}">${r.status || "-"}</span>`;
+      html += `<tr><td>${r.date}</td><td>${badge}</td><td>${r.inTime || "-"}</td><td>${r.outTime || "-"}</td></tr>`;
+    });
+    html += "</tbody></table>";
+    document.getElementById("recordsTable").innerHTML = html;
+  }
+
+  // ── Export CSV ────────────────────────────────
+  function exportCSV() {
+    callScript("exportMyData", { loginId: currentUser, name: currentName }, function(res) {
+      if (res.csv) {
+        const blob = new Blob([res.csv], { type: "text/csv;charset=utf-8;" });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement("a");
+        a.href     = url;
+        a.download = currentName.replace(/\s/g,"_") + "_Attendance.csv";
+        a.click();
+        URL.revokeObjectURL(url);
       }
     });
   }
 
-  // ── Logout ───────────────────────────────────
+  // ── Logout ─────────────────────────────────────
   function logout() {
     stopCamera(); retakePhoto();
-    currentUser = currentName = "";
+    currentUser = currentName = ""; myData = [];
     document.getElementById("loginId").value  = "";
     document.getElementById("password").value = "";
     document.getElementById("attendanceDiv").style.display = "none";
     document.getElementById("loginDiv").style.display      = "block";
     showInfo(""); showError(""); setStatus("");
+    switchTab("mark");
+  }
+
+  // ── Utils ──────────────────────────────────────
+  function toDateStr(d) {
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
   }
 </script>
 </body>
